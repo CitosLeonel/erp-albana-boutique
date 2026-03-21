@@ -1,0 +1,4 @@
+REPO: CRM-albana
+Descripcion: Mini CRM + Gestión de Ventas e Inventario para indumentaria femenina
+URL: https://github.com/CitosLeonel/crm-albana.git
+
