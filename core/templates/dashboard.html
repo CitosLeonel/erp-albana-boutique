@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-0">
+    <h1 class="text-3xl font-bold text-gray-900">Dashboard - Albana Boutique</h1>
+    
+    <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <!-- Tarjeta Ventas hoy -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Ventas del día</dt>
+                <dd class="mt-1 text-3xl font-semibold text-gray-900">$0</dd> <!-- Después ponemos datos reales -->
+            </div>
+        </div>
+
+        <!-- Tarjeta Stock bajo -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Productos con stock bajo</dt>
+                <dd class="mt-1 text-3xl font-semibold text-red-600">0</dd>
+            </div>
+        </div>
+
+        <!-- Tarjeta Clientes nuevos -->
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+                <dt class="text-sm font-medium text-gray-500 truncate">Clientes nuevos este mes</dt>
+                <dd class="mt-1 text-3xl font-semibold text-gray-900">0</dd>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón rápida para nueva venta -->
+    <div class="mt-8">
+        <a href="#" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700">
+            Nueva Venta Rápida
+        </a>
+        <a href="{% url 'admin:index' %}" class="ml-4 inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            Ir al Admin
+        </a>
+    </div>
+</div>
+{% endblock %}
