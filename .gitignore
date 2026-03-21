@@ -1,0 +1,23 @@
+# Entorno virtual
+venv/
+.venv/
+env/
+ENV/
+
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*.pyc
+*.pyo
+*.pyd
+
+# Tailwind standalone binario grande (aunque esté en venv, mejor prevenir)
+*/tailwindcss
+*/tailwindcss.exe
+pytailwindcss/bin/
+
+# Otros comunes
+*.log
+*.sqlite3
+media/
+staticfiles/
