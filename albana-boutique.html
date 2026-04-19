@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albana Boutique — CRM</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Nunito:wght@400;700;800;900&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a2e;--ink2:#2d2d4a;--cream:#f5f0e8;--cream2:#ede6d6;
+  --gold:#c9a84c;--gold2:#e8c97a;--rose:#c0616b;--sage:#5f8a72;
+  --white:#fff;--card-bg:#fff;--border-col:var(--cream2);
+  --shadow:0 4px 24px rgba(26,26,46,.10);--shadow-lg:0 8px 40px rgba(26,26,46,.18);
+  --r:14px;--r-sm:8px;--t:.22s cubic-bezier(.4,0,.2,1)
+}
+[data-theme="dark"]{
+  --cream:#111827;--cream2:#1f2937;--ink:#f3f4f6;--ink2:#e5e7eb;
+  --white:#1f2937;--card-bg:#1f2937;--border-col:#374151;
+  --shadow:0 4px 24px rgba(0,0,0,.35);--shadow-lg:0 8px 40px rgba(0,0,0,.5)
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;overflow-x:hidden;transition:background .3s,color .3s}
+/* ── BRAND ── */
+.brand-logo{line-height:1}
+.brand-albana{font-family:'Nunito',sans-serif;font-weight:900;letter-spacing:-.5px;color:inherit}
+.brand-boutique{font-family:'Cormorant Garamond',serif;font-weight:400;letter-spacing:3.5px;text-transform:uppercase;display:block}
+/* ── LOADING ── */
+#loadingScreen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ink);gap:18px}
+#loadingScreen .brand-albana{font-size:2.6rem;color:#fff}
+#loadingScreen .brand-boutique{font-size:.76rem;color:var(--gold2);margin-top:3px}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── LOGIN ── */
+#loginScreen{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--ink) 0%,var(--ink2) 60%,#3a2a5e 100%);position:relative;overflow:hidden}
+#loginScreen::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.15) 0%,transparent 70%);top:-100px;right:-100px}
+#loginScreen::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(91,143,190,.12) 0%,transparent 70%);bottom:-80px;left:-80px}
+.login-card{background:var(--card-bg);border-radius:24px;padding:48px 40px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);position:relative;z-index:1;animation:slideUp .5s ease}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .brand-albana{font-size:2.8rem;color:var(--ink)}
+.login-logo .brand-boutique{font-size:.76rem;color:#bbb;margin-top:3px}
+.login-sub{font-size:.7rem;color:#ccc;letter-spacing:1.5px;text-transform:uppercase;margin-top:10px}
+.login-error{background:#fff0f1;border:1px solid #ffcdd2;color:var(--rose);border-radius:var(--r-sm);padding:10px 14px;font-size:.84rem;margin-bottom:14px;display:none}
+
+/* ── FORMS ── */
+.fg{margin-bottom:16px}
+.fg label{display:block;font-size:.74rem;font-weight:600;letter-spacing:.5px;color:var(--ink2);margin-bottom:5px;text-transform:uppercase}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;border:1.5px solid var(--border-col);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.93rem;color:var(--ink);background:var(--cream2);transition:border var(--t),box-shadow var(--t);outline:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.15);background:var(--card-bg)}
+.fg textarea{resize:vertical;min-height:72px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:none;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.87rem;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-primary{background:var(--ink);color:var(--white);justify-content:center}
+.btn-primary:hover{background:var(--ink2);transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn-login{width:100%;padding:13px;font-size:.98rem}
+.btn-gold{background:var(--gold);color:var(--ink)}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-1px)}
+.btn-outline{background:transparent;border:1.5px solid var(--cream2);color:var(--ink)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-danger{background:var(--rose);color:white}
+.btn-danger:hover{opacity:.85}
+.btn-sm{padding:5px 11px;font-size:.76rem}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:232px;background:var(--ink);display:flex;flex-direction:column;z-index:100;transition:transform var(--t)}
+.sidebar-logo{padding:20px 20px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sidebar-logo .brand-albana{font-size:1.45rem;color:#fff}
+.sidebar-logo .brand-boutique{font-size:.58rem;color:var(--gold2);margin-top:1px}
+.role-badge{display:inline-block;margin-top:5px;padding:2px 8px;background:rgba(201,168,76,.15);color:var(--gold2);border-radius:20px;font-size:.67rem;letter-spacing:1px;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-section{padding:10px 15px 2px;font-size:.63rem;font-weight:600;letter-spacing:1.5px;color:rgba(255,255,255,.26);text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;color:rgba(255,255,255,.58);cursor:pointer;transition:all var(--t);font-size:.87rem;font-weight:500;border-left:3px solid transparent}
+.nav-item:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.nav-item.active{color:var(--gold2);background:rgba(201,168,76,.1);border-left-color:var(--gold)}
+.nav-icon{font-size:.95rem;width:17px;text-align:center}
+.sidebar-footer{padding:13px 18px;border-top:1px solid rgba(255,255,255,.08)}
+.user-info{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.user-avatar{width:33px;height:33px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--ink);font-size:.8rem;flex-shrink:0}
+.user-name{font-size:.83rem;color:var(--white);font-weight:500}
+.user-role{font-size:.68rem;color:rgba(255,255,255,.36)}
+.btn-logout{width:100%;background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.44);padding:8px;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.79rem;cursor:pointer;transition:all var(--t)}
+.btn-logout:hover{background:rgba(192,97,107,.2);color:#ff9aa2}
+.main-content{margin-left:232px;padding:28px;min-height:100vh;transition:margin var(--t)}
+.mobile-header{display:none;position:fixed;top:0;left:0;right:0;height:56px;background:var(--ink);z-index:99;align-items:center;padding:0 15px;gap:13px}
+.mobile-header .brand-albana{font-size:1.2rem;color:#fff}
+.mobile-header .brand-boutique{font-size:.5rem;color:var(--gold2)}
+.hamburger{background:none;border:none;color:white;font-size:1.3rem;cursor:pointer;margin-left:auto}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.sidebar-overlay.open{display:block}
+
+/* ── VIEWS ── */
+.view{display:none;animation:fadeIn .26s ease}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:9px}
+.page-header h2{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--ink);line-height:1.1}
+.page-header p{color:#999;font-size:.81rem;margin-top:2px}
+.header-actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+
+/* ── STATS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:13px;margin-bottom:22px}
+.stat-card{background:var(--card-bg);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);transition:transform var(--t)}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-icon{font-size:1.3rem;margin-bottom:6px}
+.stat-label{font-size:.7rem;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:1px}
+.stat-value{font-family:'DM Serif Display',serif;font-size:1.8rem;color:var(--ink);margin:3px 0 1px}
+.stat-sub{font-size:.76rem;color:#ccc}
+
+/* ── TABLE ── */
+.table-card{background:var(--card-bg);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;margin-bottom:18px}
+.table-card-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--cream2);flex-wrap:wrap;gap:9px}
+.table-card-header h3{font-family:'DM Serif Display',serif;font-size:1.08rem}
+.search-bar{display:flex;align-items:center;gap:6px;background:var(--cream);border:1.5px solid var(--cream2);border-radius:var(--r-sm);padding:6px 11px;transition:border var(--t)}
+.search-bar:focus-within{border-color:var(--gold)}
+.search-bar input{border:none;background:transparent;outline:none;font-family:'DM Sans',sans-serif;font-size:.81rem;color:var(--ink);width:150px}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{padding:10px 16px;text-align:left;font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#aaa;border-bottom:1px solid var(--border-col);background:var(--cream2)}
+.data-table td{padding:12px 16px;font-size:.86rem;border-bottom:1px solid var(--border-col);vertical-align:middle}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:rgba(201,168,76,.04)}
+.table-scroll{overflow-x:auto}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.69rem;font-weight:600}
+.badge-green{background:#e8f5e9;color:#2e7d32}
+.badge-yellow{background:#fff8e1;color:#e65100}
+.badge-red{background:#fce4ec;color:#c62828}
+.badge-blue{background:#e3f2fd;color:#1565c0}
+.badge-gray{background:#f5f5f5;color:#757575}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,26,46,.55);z-index:200;align-items:center;justify-content:center;padding:13px}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease}
+.modal{background:var(--card-bg);border-radius:18px;padding:28px;width:100%;max-width:490px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:slideUp .26s ease}
+.modal h3{font-family:'DM Serif Display',serif;font-size:1.3rem;margin-bottom:16px;color:var(--ink)}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--cream2);flex-wrap:wrap}
+
+/* ── STOCK ── */
+.stock-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:13px}
+.stock-card{background:var(--card-bg);border-radius:var(--r);padding:15px;box-shadow:var(--shadow);transition:transform var(--t);cursor:pointer}
+.stock-card:hover{transform:translateY(-2px)}
+.stock-card-name{font-weight:600;font-size:.91rem;margin-bottom:2px}
+.stock-card-cat{font-size:.71rem;color:#bbb;margin-bottom:10px}
+.stock-bar-wrap{display:flex;align-items:center;gap:6px}
+.stock-bar-bg{flex:1;height:5px;background:var(--cream2);border-radius:3px;overflow:hidden}
+.stock-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.stock-qty{font-size:.76rem;font-weight:700;color:var(--ink);white-space:nowrap}
+.stock-price{font-size:.79rem;color:var(--sage);font-weight:600;margin-top:6px}
+
+/* ── CAJA CHART ── */
+.cf-chart{background:var(--card-bg);border-radius:var(--r);padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+.cf-chart h3{font-family:'DM Serif Display',serif;font-size:1.06rem;margin-bottom:12px}
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:100px;margin-top:6px}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.bar{width:100%;border-radius:3px 3px 0 0;min-height:3px;cursor:pointer}
+.bar:hover{opacity:.72}
+.bar-lbl{font-size:.62rem;color:#ccc;text-align:center}
+.cf-totals{display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid var(--cream2)}
+.cf-total-item{display:flex;flex-direction:column;gap:2px}
+.cf-total-label{font-size:.68rem;color:#bbb;text-transform:uppercase;letter-spacing:.5px}
+.cf-total-val{font-family:'DM Serif Display',serif;font-size:1.35rem}
+
+/* ── MISC ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:white;padding:12px 16px;border-radius:var(--r-sm);font-size:.84rem;font-weight:500;box-shadow:var(--shadow-lg);z-index:999;opacity:0;transform:translateY(9px);transition:all .3s ease;display:flex;align-items:center;gap:6px;max-width:300px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-left:4px solid var(--sage)}
+.toast.error{border-left:4px solid var(--rose)}
+.empty-state{text-align:center;padding:40px 20px;color:#ccc}
+.empty-icon{font-size:2rem;margin-bottom:8px}
+.text-muted{color:#bbb;font-size:.82rem}
+.fw-600{font-weight:600}
+.color-rose{color:var(--rose)}
+.color-sage{color:var(--sage)}
+.filter-btn{padding:6px 14px;border-radius:20px;border:1.5px solid var(--cream2);background:var(--white);font-family:'DM Sans',sans-serif;font-size:.8rem;cursor:pointer;transition:all var(--t);font-weight:500}
+.filter-btn.active{background:var(--ink);color:white;border-color:var(--ink)}
+.filter-btn:hover:not(.active){border-color:var(--gold);color:var(--gold)}
+.sel-inline{padding:7px 10px;border:1.5px solid var(--cream2);border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.82rem;background:var(--cream);color:var(--ink);outline:none}
+.loading-row td{text-align:center;padding:28px;color:#bbb;font-size:.85rem}
+
+/* ── CONFIG BANNER ── */
+.config-banner{background:#fff8e1;border:1.5px solid #ffe082;border-radius:var(--r);padding:16px 20px;margin-bottom:22px;font-size:.86rem;line-height:1.6}
+.config-banner strong{color:var(--ink)}
+.config-banner code{background:var(--cream2);padding:2px 6px;border-radius:4px;font-size:.82rem;font-family:monospace}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .mobile-header{display:flex}
+  .main-content{margin-left:0;padding:68px 13px 22px}
+  .form-row{grid-template-columns:1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .page-header{flex-direction:column}
+  .search-bar input{width:105px}
+  .modal{padding:20px 14px}
+  .table-card-header{flex-direction:column;align-items:flex-start}
+  .data-table th:nth-child(n+5),.data-table td:nth-child(n+5){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="brand-logo" style="text-align:center">
+    <div class="brand-albana" style="font-size:2.6rem;color:#fff">Albana Boutique</div>
+    <span class="brand-boutique" style="font-size:.76rem;color:#e8c97a;margin-top:3px">Gestión de Tienda</span>
+  </div>
+  <div class="spinner"></div>
+</div>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="brand-albana" style="font-size:2.8rem;color:var(--ink)">Albana Boutique</div>
+      <span class="brand-boutique" style="font-size:.76rem;color:#bbb;margin-top:4px">CRM · Gestión de Tienda</span>
+    </div>
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos.</div>
+    <div class="fg"><label>Usuario</label><input type="text" id="loginUser" placeholder="tu usuario" autocomplete="username"></div>
+    <div class="fg"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn btn-primary btn-login" id="loginBtn" onclick="doLogin()">Ingresar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand-albana" style="font-size:1.4rem;color:#fff">Albana Boutique</div>
+      <span class="brand-boutique" style="font-size:.57rem;color:var(--gold2);margin-top:2px">Gestión de Tienda</span>
+      <div class="role-badge" id="sidebarRole" style="margin-top:8px">vendedor</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-icon">📊</span> Dashboard</div>
+      <div class="nav-section">Operaciones</div>
+      <div class="nav-item" onclick="nav('ventas')"><span class="nav-icon">💰</span> Ventas</div>
+      <div class="nav-item" onclick="nav('compras')"><span class="nav-icon">🛒</span> Compras</div>
+      <div class="nav-item" onclick="nav('stock')"><span class="nav-icon">📦</span> Stock</div>
+      <div class="nav-item" onclick="nav('caja')"><span class="nav-icon">💳</span> Flujo de Caja</div>
+      <div class="nav-section">Contactos</div>
+      <div class="nav-item" onclick="nav('clientes')"><span class="nav-icon">👥</span> Clientes</div>
+      <div class="nav-item" onclick="nav('proveedores')"><span class="nav-icon">🏭</span> Proveedores</div>
+      <div id="adminNavSection" style="display:none">
+        <div class="nav-section">Admin</div>
+        <div class="nav-item" onclick="nav('usuarios')"><span class="nav-icon">🔐</span> Usuarios</div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="userAvatar">?</div>
+        <div><div class="user-name" id="userName">—</div><div class="user-role" id="userRoleLabel">—</div></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button onclick="toggleTheme()" id="themeBtn" style="flex:1;background:rgba(255,255,255,.06);border:none;color:rgba(255,255,255,.55);padding:8px;border-radius:var(--r-sm);font-family:'DM Sans',sans-serif;font-size:.78rem;cursor:pointer;transition:all var(--t)" title="Cambiar tema">🌙 Modo oscuro</button>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">⎋ Cerrar sesión</button>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="mobile-header">
+    <div class="brand-logo">
+      <div class="brand-albana" style="font-size:1.15rem;color:#fff">Albana Boutique</div>
+      <span class="brand-boutique" style="font-size:.48rem;color:var(--gold2)">Gestión de Tienda</span>
+    </div>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+  </div>
+
+  <main class="main-content">
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="page-header"><div><h2>Dashboard</h2><p id="dashDate">—</p></div></div>
+      <div class="stats-grid" id="dashStats"><div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-label">Cargando</div><div class="stat-value">—</div></div></div>
+      <div id="dashGrid" style="display:grid;gap:15px;grid-template-columns:1fr 1fr">
+        <div class="table-card"><div class="table-card-header"><h3>Últimas Ventas</h3></div><div class="table-scroll"><table class="data-table" id="dashVentasTable"><tbody><tr class="loading-row"><td colspan="4">Cargando...</td></tr></tbody></table></div></div>
+        <div class="table-card"><div class="table-card-header"><h3>Stock Crítico</h3></div><div class="table-scroll"><table class="data-table" id="dashStockTable"><tbody><tr class="loading-row"><td colspan="3">Cargando...</td></tr></tbody></table></div></div>
+      </div>
+    </div>
+
+    <!-- VENTAS -->
+    <div class="view" id="view-ventas">
+      <div class="page-header"><div><h2>Ventas</h2><p>Registrá y gestioná tus ventas</p></div>
+      <div class="header-actions"><button class="btn btn-gold" onclick="openModal('ventaModal')">+ Nueva Venta</button></div></div>
+      <div class="stats-grid" id="ventasStats"></div>
+      <div class="table-card"><div class="table-card-header"><h3>Historial</h3>
+        <div class="search-bar"><span>🔍</span><input type="text" placeholder="Buscar..." oninput="filterTable(this,'ventasTable')"></div></div>
+        <div class="table-scroll"><table class="data-table" id="ventasTable"></table></div></div>
+    </div>
+
+    <!-- COMPRAS -->
+    <div class="view" id="view-compras">
+      <div class="page-header"><div><h2>Compras</h2><p>Carga de mercadería nueva</p></div>
+      <div class="header-actions"><button class="btn btn-gold" onclick="openModal('compraModal')">+ Nueva Compra</button></div></div>
+      <div class="stats-grid" id="comprasStats"></div>
+      <div class="table-card"><div class="table-card-header"><h3>Historial</h3>
+        <div class="search-bar"><span>🔍</span><input type="text" placeholder="Buscar..." oninput="filterTable(this,'comprasTable')"></div></div>
+        <div class="table-scroll"><table class="data-table" id="comprasTable"></table></div></div>
+    </div>
+
+    <!-- STOCK -->
+    <div class="view" id="view-stock">
+      <div class="page-header"><div><h2>Stock</h2><p>Inventario de productos</p></div>
+      <div class="header-actions">
+        <button class="btn btn-outline" onclick="openModal('productoModal')">+ Producto</button>
+        <button class="btn btn-gold" onclick="openModal('ajusteModal')">Ajustar Stock</button>
+      </div></div>
+      <div class="stats-grid" id="stockStats"></div>
+      <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap" id="stockCatFilters"></div>
+      <div class="stock-grid" id="stockGrid"></div>
+    </div>
+
+    <!-- CAJA -->
+    <div class="view" id="view-caja">
+      <div class="page-header"><div><h2>Flujo de Caja</h2><p>Ingresos y egresos</p></div>
+      <div class="header-actions"><button class="btn btn-gold" onclick="openModal('movModal')">+ Movimiento</button></div></div>
+      <div class="stats-grid" id="cajaStats"></div>
+      <div class="cf-chart"><h3>Últimos 7 días</h3><div class="bar-chart" id="cajaChart"></div><div class="cf-totals" id="cajaTotals"></div></div>
+      <div class="table-card"><div class="table-card-header"><h3>Movimientos</h3>
+        <select class="sel-inline" onchange="filterCaja(this.value)"><option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option></select>
+      </div><div class="table-scroll"><table class="data-table" id="cajaTable"></table></div></div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="view" id="view-clientes">
+      <div class="page-header"><div><h2>Clientes</h2><p>Tu base de clientes</p></div>
+      <div class="header-actions"><button class="btn btn-gold" onclick="openModal('clienteModal')">+ Nuevo Cliente</button></div></div>
+      <div class="table-card"><div class="table-card-header"><h3>Directorio</h3>
+        <div class="search-bar"><span>🔍</span><input type="text" placeholder="Buscar..." oninput="filterTable(this,'clientesTable')"></div></div>
+        <div class="table-scroll"><table class="data-table" id="clientesTable"></table></div></div>
+    </div>
+
+    <!-- PROVEEDORES -->
+    <div class="view" id="view-proveedores">
+      <div class="page-header"><div><h2>Proveedores</h2><p>Tus contactos de proveedores</p></div>
+      <div class="header-actions"><button class="btn btn-gold" onclick="openModal('proveedorModal')">+ Nuevo Proveedor</button></div></div>
+      <div class="table-card"><div class="table-card-header"><h3>Directorio</h3>
+        <div class="search-bar"><span>🔍</span><input type="text" placeholder="Buscar..." oninput="filterTable(this,'proveedoresTable')"></div></div>
+        <div class="table-scroll"><table class="data-table" id="proveedoresTable"></table></div></div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div class="view" id="view-usuarios">
+      <div class="page-header"><div><h2>Usuarios</h2><p>Gestioná los accesos al sistema</p></div></div>
+      <div class="table-card">
+        <div class="table-card-header"><h3>Usuarios del sistema</h3></div>
+        <div class="table-scroll"><table class="data-table" id="usuariosTable"></table></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="ventaModal">
+  <div class="modal"><h3>Nueva Venta</h3>
+    <div class="fg"><label>Cliente</label><select id="vCliente"><option value="">Sin cliente (mostrador)</option></select></div>
+    <div class="fg"><label>Producto</label><select id="vProducto" onchange="fillVentaPrice()"></select></div>
+    <div class="form-row">
+      <div class="fg"><label>Cantidad</label><input type="number" id="vCantidad" value="1" min="1" oninput="calcVentaTotal()"></div>
+      <div class="fg"><label>Precio Unit. ($)</label><input type="number" id="vPrecio" oninput="calcVentaTotal()"></div>
+    </div>
+    <div class="fg"><label>Método de Pago</label>
+      <select id="vPago"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta Débito</option><option>Tarjeta Crédito</option><option>Mercado Pago</option></select></div>
+    <div class="fg"><label>Notas</label><textarea id="vNotas" rows="2" placeholder="Opcional..."></textarea></div>
+    <div style="background:var(--cream);border-radius:var(--r-sm);padding:11px 13px;font-size:.88rem;margin-bottom:4px">Total: <strong id="vTotal">$0</strong></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('ventaModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveVenta" onclick="saveVenta()">Registrar Venta</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="compraModal">
+  <div class="modal"><h3>Nueva Compra de Stock</h3>
+    <div class="fg"><label>Proveedor</label><select id="cProveedor"><option value="">Sin especificar</option></select></div>
+    <div class="fg"><label>Producto</label>
+      <select id="cProducto" onchange="onCompraProducto()"><option value="__nuevo__">+ Producto nuevo</option></select></div>
+    <div id="nuevoProductoFields">
+      <div class="form-row">
+        <div class="fg"><label>Nombre del producto</label><input type="text" id="cNombreProd" placeholder="Ej: Remera Azul M"></div>
+        <div class="fg"><label>Categoría</label>
+          <select id="cCategoria"><option>Remeras</option><option>Pantalones</option><option>Vestidos</option><option>Camperas</option><option>Accesorios</option><option>Otro</option></select></div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Cantidad</label><input type="number" id="cCantidad" value="1" min="1"></div>
+      <div class="fg"><label>Costo Unit. ($)</label><input type="number" id="cCosto" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>Precio de Venta ($)</label><input type="number" id="cPrecioVenta" placeholder="0"></div>
+    <div class="fg"><label>Fecha</label><input type="date" id="cFecha"></div>
+    <div class="fg"><label>Notas</label><textarea id="cNotas" rows="2" placeholder="Opcional..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('compraModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveCompra" onclick="saveCompra()">Registrar Compra</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="productoModal">
+  <div class="modal"><h3>Nuevo Producto</h3>
+    <div class="fg"><label>Nombre</label><input type="text" id="pNombre" placeholder="Ej: Remera Blanca M"></div>
+    <div class="form-row">
+      <div class="fg"><label>Categoría</label>
+        <select id="pCategoria"><option>Remeras</option><option>Pantalones</option><option>Vestidos</option><option>Camperas</option><option>Accesorios</option><option>Otro</option></select></div>
+      <div class="fg"><label>Stock inicial</label><input type="number" id="pStock" value="0" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Costo ($)</label><input type="number" id="pCosto" placeholder="0"></div>
+      <div class="fg"><label>Precio Venta ($)</label><input type="number" id="pPrecio" placeholder="0"></div>
+    </div>
+    <div class="fg"><label>Stock mínimo (alerta)</label><input type="number" id="pStockMin" value="3"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('productoModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveProducto" onclick="saveProducto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="ajusteModal">
+  <div class="modal"><h3>Ajuste de Stock</h3>
+    <div class="fg"><label>Producto</label><select id="ajProducto" onchange="onAjusteProd()"></select></div>
+    <div class="form-row">
+      <div class="fg"><label>Stock actual</label><input type="number" id="ajStockActual" readonly style="background:#f0f0f0;color:#aaa"></div>
+      <div class="fg"><label>Nuevo stock</label><input type="number" id="ajNuevoStock" min="0"></div>
+    </div>
+    <div class="fg"><label>Motivo</label>
+      <select id="ajMotivo"><option>Conteo físico</option><option>Merma / pérdida</option><option>Devolución</option><option>Otro</option></select></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('ajusteModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveAjuste" onclick="saveAjuste()">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="movModal">
+  <div class="modal"><h3>Nuevo Movimiento</h3>
+    <div class="fg"><label>Tipo</label>
+      <select id="mTipo"><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></div>
+    <div class="fg"><label>Descripción</label><input type="text" id="mDesc" placeholder="Ej: Pago alquiler, cobro venta..."></div>
+    <div class="form-row">
+      <div class="fg"><label>Monto ($)</label><input type="number" id="mMonto" placeholder="0" min="0"></div>
+      <div class="fg"><label>Fecha</label><input type="date" id="mFecha"></div>
+    </div>
+    <div class="fg"><label>Categoría</label>
+      <select id="mCat"><option>Ventas</option><option>Compras / Stock</option><option>Alquiler</option><option>Servicios</option><option>Sueldos</option><option>Publicidad</option><option>Otros ingresos</option><option>Otros egresos</option></select></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('movModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveMov" onclick="saveMov()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="clienteModal">
+  <div class="modal"><h3>Nuevo Cliente</h3>
+    <div class="form-row">
+      <div class="fg"><label>Nombre</label><input type="text" id="clNombre" placeholder="Nombre y apellido"></div>
+      <div class="fg"><label>Teléfono</label><input type="text" id="clTel" placeholder="+54 9 ..."></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Email</label><input type="email" id="clEmail" placeholder="correo@..."></div>
+      <div class="fg"><label>Instagram</label><input type="text" id="clInsta" placeholder="@usuario"></div>
+    </div>
+    <div class="fg"><label>Notas</label><textarea id="clNotas" rows="2" placeholder="Tallas, preferencias..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('clienteModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveCliente" onclick="saveCliente()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="proveedorModal">
+  <div class="modal"><h3>Nuevo Proveedor</h3>
+    <div class="form-row">
+      <div class="fg"><label>Nombre / Empresa</label><input type="text" id="pvNombre" placeholder="Nombre del proveedor"></div>
+      <div class="fg"><label>Teléfono</label><input type="text" id="pvTel" placeholder="+54 9 ..."></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Email</label><input type="email" id="pvEmail" placeholder="contacto@empresa.com"></div>
+      <div class="fg"><label>WhatsApp / Instagram</label><input type="text" id="pvWa" placeholder="@usuario o número"></div>
+    </div>
+    <div class="fg"><label>Rubro / Productos</label><input type="text" id="pvRubro" placeholder="Ej: Remeras, Mayorista jeans..."></div>
+    <div class="fg"><label>Notas</label><textarea id="pvNotas" rows="2" placeholder="Días de entrega, condiciones..."></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('proveedorModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveProveedor" onclick="saveProveedor()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="usuarioModal">
+  <div class="modal"><h3 id="usuarioModalTitle">Nuevo Usuario</h3>
+    <input type="hidden" id="uEditId">
+    <div class="form-row">
+      <div class="fg"><label>Nombre completo</label><input type="text" id="uNombre" placeholder="Ej: María González"></div>
+      <div class="fg"><label>Rol</label>
+        <select id="uRol"><option value="vendedor">Vendedor</option><option value="admin">Administrador</option></select></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Usuario (login)</label><input type="text" id="uUser" placeholder="Ej: maria" autocomplete="off"></div>
+      <div class="fg"><label>Contraseña</label><input type="password" id="uPass" placeholder="Mínimo 4 caracteres" autocomplete="new-password"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('usuarioModal')">Cancelar</button>
+      <button class="btn btn-gold" id="btnSaveUsuario" onclick="saveUsuario()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  SUPABASE CONFIG — reemplazá estos valores con los tuyos
+// ============================================================
+const SUPABASE_URL = 'https://uoumkmzbstdoqnbbssjq.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_LYghwYN6eokKQLjB182tJQ_-_NI1VKf';
+
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Usuarios del sistema (se pueden manejar acá mismo o en Supabase Auth)
+const USERS = [
+  { id: 1, user: 'admin',     pass: 'admin123',  name: 'Administrador', role: 'admin' },
+  { id: 2, user: 'vendedor1', pass: 'vende1',    name: 'Vendedor 1',    role: 'vendedor' },
+  { id: 3, user: 'vendedor2', pass: 'vende2',    name: 'Vendedor 2',    role: 'vendedor' },
+];
+
+let currentUser = null;
+let currentView = 'dashboard';
+let cajaFilter = '';
+let stockCat = 'Todos';
+
+// Cache local para no re-fetch innecesariamente
+let cache = { productos: [], clientes: [], proveedores: [] };
+
+// ============================================================
+//  INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', async () => {
+  initTheme();
+  // Verificar sesión guardada
+  const saved = sessionStorage.getItem('albanaUser');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    hideLoading();
+    showApp();
+  } else {
+    hideLoading();
+    showLogin();
+  }
+});
+
+function hideLoading() {
+  document.getElementById('loadingScreen').style.display = 'none';
+}
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('userName').textContent = currentUser.name;
+  document.getElementById('userRoleLabel').textContent = currentUser.role === 'admin' ? 'Administrador' : 'Vendedor';
+  document.getElementById('userAvatar').textContent = currentUser.name[0].toUpperCase();
+  document.getElementById('sidebarRole').textContent = currentUser.role === 'admin' ? 'Admin' : 'Vendedor';
+  document.getElementById('adminNavSection').style.display = currentUser.role === 'admin' ? 'block' : 'none';
+  document.getElementById('dashDate').textContent = new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('mFecha').value = today();
+  document.getElementById('cFecha').value = today();
+  nav('dashboard');
+}
+
+// ============================================================
+//  AUTH
+// ============================================================
+async function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  const btn = document.getElementById('loginBtn');
+  const found = getUsuarios().find(x => x.user === u && x.pass === p);
+  if (!found) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  document.getElementById('loginError').style.display = 'none';
+  btn.textContent = 'Ingresando...';
+  btn.disabled = true;
+  currentUser = found;
+  sessionStorage.setItem('albanaUser', JSON.stringify(found));
+  showApp();
+  btn.textContent = 'Ingresar';
+  btn.disabled = false;
+}
+
+function doLogout() {
+  currentUser = null;
+  sessionStorage.removeItem('albanaUser');
+  cache = { productos: [], clientes: [], proveedores: [] };
+  document.getElementById('app').style.display = 'none';
+  showLogin();
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('loginPass').focus(); });
+
+// ============================================================
+//  NAV
+// ============================================================
+function nav(v) {
+  currentView = v;
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('onclick') && el.getAttribute('onclick').includes("'" + v + "'"));
+  });
+  closeSidebar();
+  renderView(v);
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebarOverlay').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.remove('open'); }
+
+// ============================================================
+//  RENDER DISPATCHER
+// ============================================================
+async function renderView(v) {
+  if (v === 'dashboard') await renderDashboard();
+  else if (v === 'ventas') await renderVentas();
+  else if (v === 'compras') await renderCompras();
+  else if (v === 'stock') await renderStock();
+  else if (v === 'caja') await renderCaja();
+  else if (v === 'clientes') await renderClientes();
+  else if (v === 'proveedores') await renderProveedores();
+  else if (v === 'usuarios') renderUsuarios();
+}
+
+// ============================================================
+//  SUPABASE HELPERS
+// ============================================================
+async function fetchAll(table, order = 'created_at') {
+  const { data, error } = await db.from(table).select('*').order(order, { ascending: false });
+  if (error) { console.error(table, error); return []; }
+  return data || [];
+}
+
+async function insert(table, row) {
+  const { data, error } = await db.from(table).insert(row).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function update(table, id, changes) {
+  const { error } = await db.from(table).update(changes).eq('id', id);
+  if (error) throw error;
+}
+
+async function remove(table, id) {
+  const { error } = await db.from(table).delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ============================================================
+//  DASHBOARD
+// ============================================================
+async function renderDashboard() {
+  const mes = today().substring(0, 7);
+  const [ventas, compras, caja, productos] = await Promise.all([
+    fetchAll('ventas', 'fecha'),
+    fetchAll('compras', 'fecha'),
+    fetchAll('caja', 'fecha'),
+    fetchAll('productos')
+  ]);
+  cache.productos = productos;
+
+  const vMes = ventas.filter(v => v.fecha && v.fecha.startsWith(mes));
+  const tVentas = vMes.reduce((a, v) => a + (v.cant * v.precio), 0);
+  const tCompras = compras.filter(c => c.fecha && c.fecha.startsWith(mes)).reduce((a, c) => a + (c.cant * c.costo), 0);
+  const saldo = caja.reduce((a, m) => m.tipo === 'ingreso' ? a + m.monto : a - m.monto, 0);
+  const criticos = productos.filter(p => p.stock <= p.stock_min).length;
+
+  document.getElementById('dashStats').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Ventas del mes</div><div class="stat-value">${fmt(tVentas)}</div><div class="stat-sub">${vMes.length} transacciones</div></div>
+    <div class="stat-card"><div class="stat-icon">🛒</div><div class="stat-label">Compras del mes</div><div class="stat-value">${fmt(tCompras)}</div></div>
+    <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-label">Saldo Caja</div><div class="stat-value" style="color:${saldo >= 0 ? 'var(--sage)' : 'var(--rose)'}">${fmt(saldo)}</div></div>
+    <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-label">Stock crítico</div><div class="stat-value" style="color:${criticos > 0 ? 'var(--rose)' : 'var(--sage)'}">${criticos}</div></div>`;
+
+  const ultiV = [...ventas].sort((a, b) => b.fecha?.localeCompare(a.fecha)).slice(0, 5);
+  document.getElementById('dashVentasTable').innerHTML = `<thead><tr><th>Fecha</th><th>Producto</th><th>Total</th><th>Pago</th></tr></thead><tbody>${
+    ultiV.length ? ultiV.map(v => {
+      const p = productos.find(x => x.id === v.producto_id);
+      return `<tr><td>${v.fecha}</td><td>${p ? p.nombre : '—'}</td><td class="fw-600 color-sage">${fmt(v.cant * v.precio)}</td><td>${v.pago}</td></tr>`;
+    }).join('') : '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:16px">Sin ventas</td></tr>'}</tbody>`;
+
+  const crits = productos.filter(p => p.stock <= p.stock_min).slice(0, 6);
+  document.getElementById('dashStockTable').innerHTML = `<thead><tr><th>Producto</th><th>Stock</th><th>Estado</th></tr></thead><tbody>${
+    crits.length ? crits.map(p => `<tr><td>${p.nombre}</td><td>${p.stock}</td><td>${p.stock === 0 ? '<span class="badge badge-red">Sin stock</span>' : '<span class="badge badge-yellow">Bajo</span>'}</td></tr>`).join('')
+    : '<tr><td colspan="3" class="text-muted" style="text-align:center;padding:16px">✓ Stock OK</td></tr>'}</tbody>`;
+
+  document.getElementById('dashGrid').style.gridTemplateColumns = window.innerWidth < 700 ? '1fr' : '1fr 1fr';
+}
+
+// ============================================================
+//  VENTAS
+// ============================================================
+async function renderVentas() {
+  const [ventas, productos, clientes] = await Promise.all([fetchAll('ventas', 'fecha'), fetchAll('productos'), fetchAll('clientes')]);
+  cache.productos = productos; cache.clientes = clientes;
+  const total = ventas.reduce((a, v) => a + v.cant * v.precio, 0);
+  const mes = today().substring(0, 7);
+  const esteM = ventas.filter(v => v.fecha?.startsWith(mes)).reduce((a, v) => a + v.cant * v.precio, 0);
+  document.getElementById('ventasStats').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">💰</div><div class="stat-label">Total vendido</div><div class="stat-value">${fmt(total)}</div></div>
+    <div class="stat-card"><div class="stat-icon">📅</div><div class="stat-label">Este mes</div><div class="stat-value">${fmt(esteM)}</div></div>
+    <div class="stat-card"><div class="stat-icon">🧾</div><div class="stat-label">Nº ventas</div><div class="stat-value">${ventas.length}</div></div>`;
+  const rows = ventas.map(v => {
+    const p = productos.find(x => x.id === v.producto_id);
+    const cl = v.cliente_id ? clientes.find(x => x.id === v.cliente_id) : null;
+    return `<tr><td>${v.fecha}</td><td>${p ? p.nombre : '—'}</td><td>${cl ? cl.nombre : '<span class="text-muted">Mostrador</span>'}</td><td>${v.cant}</td><td class="fw-600 color-sage">${fmt(v.cant * v.precio)}</td><td>${v.pago}</td><td class="text-muted">${v.vendedor || '—'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteVenta('${v.id}')">✕</button></td></tr>`;
+  });
+  document.getElementById('ventasTable').innerHTML = `<thead><tr><th>Fecha</th><th>Producto</th><th>Cliente</th><th>Cant</th><th>Total</th><th>Pago</th><th>Vendedor</th><th></th></tr></thead><tbody>${rows.length ? rows.join('') : '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">💰</div><p>Sin ventas registradas</p></div></td></tr>'}</tbody>`;
+}
+
+// ============================================================
+//  COMPRAS
+// ============================================================
+async function renderCompras() {
+  const [compras, productos, proveedores] = await Promise.all([fetchAll('compras', 'fecha'), fetchAll('productos'), fetchAll('proveedores')]);
+  cache.productos = productos; cache.proveedores = proveedores;
+  const total = compras.reduce((a, c) => a + c.cant * c.costo, 0);
+  document.getElementById('comprasStats').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">🛒</div><div class="stat-label">Total invertido</div><div class="stat-value">${fmt(total)}</div></div>
+    <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">Órdenes</div><div class="stat-value">${compras.length}</div></div>`;
+  const rows = compras.map(c => {
+    const p = productos.find(x => x.id === c.producto_id);
+    const pv = c.proveedor_id ? proveedores.find(x => x.id === c.proveedor_id) : null;
+    return `<tr><td>${c.fecha}</td><td>${p ? p.nombre : '—'}</td><td>${pv ? pv.nombre : '<span class="text-muted">—</span>'}</td><td>${c.cant}</td><td class="fw-600 color-rose">${fmt(c.cant * c.costo)}</td><td class="text-muted">${c.notas || '—'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteCompra('${c.id}')">✕</button></td></tr>`;
+  });
+  document.getElementById('comprasTable').innerHTML = `<thead><tr><th>Fecha</th><th>Producto</th><th>Proveedor</th><th>Cant</th><th>Total</th><th>Notas</th><th></th></tr></thead><tbody>${rows.length ? rows.join('') : '<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">🛒</div><p>Sin compras</p></div></td></tr>'}</tbody>`;
+}
+
+// ============================================================
+//  STOCK
+// ============================================================
+async function renderStock() {
+  const productos = await fetchAll('productos');
+  cache.productos = productos;
+  const total = productos.reduce((a, p) => a + p.stock, 0);
+  const criticos = productos.filter(p => p.stock > 0 && p.stock <= p.stock_min).length;
+  const sinStock = productos.filter(p => p.stock === 0).length;
+  const valorInv = productos.reduce((a, p) => a + p.stock * p.costo, 0);
+  document.getElementById('stockStats').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">Total unidades</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-icon">🏷️</div><div class="stat-label">Productos</div><div class="stat-value">${productos.length}</div></div>
+    <div class="stat-card"><div class="stat-icon">⚠️</div><div class="stat-label">Stock bajo/sin</div><div class="stat-value" style="color:${criticos + sinStock > 0 ? 'var(--rose)' : 'var(--sage)'}">${criticos + sinStock}</div></div>
+    <div class="stat-card"><div class="stat-icon">💎</div><div class="stat-label">Valor inventario</div><div class="stat-value">${fmt(valorInv)}</div></div>`;
+  const cats = ['Todos', ...new Set(productos.map(p => p.categoria))];
+  document.getElementById('stockCatFilters').innerHTML = cats.map(c => `<button class="filter-btn${c === stockCat ? ' active' : ''}" onclick="setStockCat('${c}')">${c}</button>`).join('');
+  const prods = stockCat === 'Todos' ? productos : productos.filter(p => p.categoria === stockCat);
+  document.getElementById('stockGrid').innerHTML = prods.length ? prods.map(p => {
+    const pct = Math.min(100, Math.round((p.stock / Math.max(p.stock_min * 3, 10)) * 100));
+    const col = p.stock === 0 ? '#c0616b' : p.stock <= p.stock_min ? '#d48b20' : '#5f8a72';
+    const badge = p.stock === 0 ? 'badge-red' : p.stock <= p.stock_min ? 'badge-yellow' : 'badge-green';
+    const label = p.stock === 0 ? 'Sin stock' : p.stock <= p.stock_min ? 'Stock bajo' : 'OK';
+    return `<div class="stock-card" onclick="openAjusteForProd('${p.id}')">
+      <div class="stock-card-name">${p.nombre}</div>
+      <div class="stock-card-cat">${p.categoria}</div>
+      <div class="stock-bar-wrap"><div class="stock-bar-bg"><div class="stock-bar-fill" style="width:${pct}%;background:${col}"></div></div><span class="stock-qty">${p.stock} u.</span></div>
+      <div style="display:flex;justify-content:space-between;margin-top:9px;align-items:center"><span class="badge ${badge}">${label}</span><span class="stock-price">${fmt(p.precio)}</span></div>
+    </div>`;
+  }).join('') : '<p class="text-muted">No hay productos en esta categoría.</p>';
+}
+function setStockCat(c) { stockCat = c; renderStock(); }
+
+// ============================================================
+//  CAJA
+// ============================================================
+async function renderCaja() {
+  const movs = await fetchAll('caja', 'fecha');
+  const ing = movs.filter(m => m.tipo === 'ingreso').reduce((a, m) => a + m.monto, 0);
+  const eg = movs.filter(m => m.tipo === 'egreso').reduce((a, m) => a + m.monto, 0);
+  document.getElementById('cajaStats').innerHTML = `
+    <div class="stat-card"><div class="stat-icon">📈</div><div class="stat-label">Total ingresos</div><div class="stat-value color-sage">${fmt(ing)}</div></div>
+    <div class="stat-card"><div class="stat-icon">📉</div><div class="stat-label">Total egresos</div><div class="stat-value color-rose">${fmt(eg)}</div></div>
+    <div class="stat-card"><div class="stat-icon">💳</div><div class="stat-label">Saldo</div><div class="stat-value" style="color:${ing - eg >= 0 ? 'var(--sage)' : 'var(--rose)'}">${fmt(ing - eg)}</div></div>`;
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const dStr = d.toISOString().split('T')[0];
+    const label = d.toLocaleDateString('es-AR', { weekday: 'short' });
+    const ingD = movs.filter(m => m.fecha === dStr && m.tipo === 'ingreso').reduce((a, m) => a + m.monto, 0);
+    const egD = movs.filter(m => m.fecha === dStr && m.tipo === 'egreso').reduce((a, m) => a + m.monto, 0);
+    days.push({ dStr, label, ing: ingD, eg: egD });
+  }
+  const maxVal = Math.max(...days.map(d => Math.max(d.ing, d.eg)), 1);
+  document.getElementById('cajaChart').innerHTML = days.map(d => `
+    <div class="bar-wrap">
+      <div style="display:flex;gap:2px;align-items:flex-end;height:94px;width:100%">
+        <div class="bar" style="background:var(--sage);height:${Math.max(3, d.ing / maxVal * 94)}%;opacity:.82" title="Ingreso: ${fmt(d.ing)}"></div>
+        <div class="bar" style="background:var(--rose);height:${Math.max(3, d.eg / maxVal * 94)}%;opacity:.82" title="Egreso: ${fmt(d.eg)}"></div>
+      </div>
+      <span class="bar-lbl">${d.label}</span>
+    </div>`).join('');
+  document.getElementById('cajaTotals').innerHTML = `
+    <div class="cf-total-item"><span class="cf-total-label">🟢 Ingresos</span><span class="cf-total-val color-sage">${fmt(ing)}</span></div>
+    <div class="cf-total-item"><span class="cf-total-label">🔴 Egresos</span><span class="cf-total-val color-rose">${fmt(eg)}</span></div>
+    <div class="cf-total-item"><span class="cf-total-label">⚖️ Balance</span><span class="cf-total-val" style="color:${ing - eg >= 0 ? 'var(--sage)' : 'var(--rose)'}">${fmt(ing - eg)}</span></div>`;
+  const filtered = movs.filter(m => !cajaFilter || m.tipo === cajaFilter).sort((a, b) => b.fecha?.localeCompare(a.fecha));
+  document.getElementById('cajaTable').innerHTML = `<thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Categoría</th><th>Monto</th><th></th></tr></thead><tbody>${
+    filtered.length ? filtered.map(m => `<tr><td>${m.fecha}</td><td><span class="badge ${m.tipo === 'ingreso' ? 'badge-green' : 'badge-red'}">${m.tipo}</span></td><td>${m.descripcion}</td><td class="text-muted">${m.categoria}</td><td class="fw-600 ${m.tipo === 'ingreso' ? 'color-sage' : 'color-rose'}">${m.tipo === 'ingreso' ? '+' : '−'}${fmt(m.monto)}</td><td><button class="btn btn-danger btn-sm" onclick="deleteMov('${m.id}')">✕</button></td></tr>`).join('')
+    : '<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💳</div><p>Sin movimientos</p></div></td></tr>'}</tbody>`;
+}
+function filterCaja(v) { cajaFilter = v; renderCaja(); }
+
+// ============================================================
+//  CLIENTES
+// ============================================================
+async function renderClientes() {
+  const [clientes, ventas] = await Promise.all([fetchAll('clientes'), fetchAll('ventas', 'fecha')]);
+  cache.clientes = clientes;
+  const rows = clientes.map(cl => {
+    const compras = ventas.filter(v => v.cliente_id === cl.id).length;
+    const total = ventas.filter(v => v.cliente_id === cl.id).reduce((a, v) => a + v.cant * v.precio, 0);
+    return `<tr><td class="fw-600">${cl.nombre}</td><td>${cl.telefono || '—'}</td><td>${cl.email || '—'}</td><td>${cl.instagram || '—'}</td><td>${compras}</td><td class="fw-600 color-sage">${fmt(total)}</td><td class="text-muted">${cl.notas || '—'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteCliente('${cl.id}')">✕</button></td></tr>`;
+  });
+  document.getElementById('clientesTable').innerHTML = `<thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Instagram</th><th>Compras</th><th>Total</th><th>Notas</th><th></th></tr></thead><tbody>${rows.length ? rows.join('') : '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">👥</div><p>Sin clientes</p></div></td></tr>'}</tbody>`;
+}
+
+// ============================================================
+//  PROVEEDORES
+// ============================================================
+async function renderProveedores() {
+  const [proveedores, compras] = await Promise.all([fetchAll('proveedores'), fetchAll('compras', 'fecha')]);
+  cache.proveedores = proveedores;
+  const rows = proveedores.map(pv => {
+    const cs = compras.filter(c => c.proveedor_id === pv.id).length;
+    return `<tr><td class="fw-600">${pv.nombre}</td><td>${pv.telefono || '—'}</td><td>${pv.email || '—'}</td><td>${pv.whatsapp || '—'}</td><td>${pv.rubro || '—'}</td><td>${cs}</td><td class="text-muted">${pv.notas || '—'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteProveedor('${pv.id}')">✕</button></td></tr>`;
+  });
+  document.getElementById('proveedoresTable').innerHTML = `<thead><tr><th>Nombre</th><th>Teléfono</th><th>Email</th><th>WA/IG</th><th>Rubro</th><th>Compras</th><th>Notas</th><th></th></tr></thead><tbody>${rows.length ? rows.join('') : '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🏭</div><p>Sin proveedores</p></div></td></tr>'}</tbody>`;
+}
+
+// ============================================================
+//  THEME (dark / light)
+// ============================================================
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('albanaTheme', next);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = next === 'dark' ? '☀️ Modo claro' : '🌙 Modo oscuro';
+}
+function initTheme() {
+  const saved = localStorage.getItem('albanaTheme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  const btn = document.getElementById('themeBtn');
+  if (btn) btn.textContent = saved === 'dark' ? '☀️ Modo claro' : '🌙 Modo oscuro';
+}
+
+// ============================================================
+//  USUARIOS — gestión completa (stored in localStorage)
+// ============================================================
+function getUsuarios() {
+  const stored = localStorage.getItem('albanaUsers');
+  if (stored) return JSON.parse(stored);
+  // defaults
+  const defaults = [
+    { id: 1, name: 'Administrador', user: 'admin',     pass: 'admin123', role: 'admin' },
+    { id: 2, name: 'Vendedor 1',    user: 'vendedor1', pass: 'vende1',   role: 'vendedor' },
+    { id: 3, name: 'Vendedor 2',    user: 'vendedor2', pass: 'vende2',   role: 'vendedor' },
+  ];
+  localStorage.setItem('albanaUsers', JSON.stringify(defaults));
+  return defaults;
+}
+function saveUsuarios(list) { localStorage.setItem('albanaUsers', JSON.stringify(list)); }
+
+function renderUsuarios() {
+  const users = getUsuarios();
+  const rows = users.map(u => `
+    <tr>
+      <td class="fw-600">${u.name}</td>
+      <td>${u.user}</td>
+      <td><span style="letter-spacing:2px;color:#bbb">••••••</span></td>
+      <td><span class="badge ${u.role === 'admin' ? 'badge-blue' : 'badge-gray'}">${u.role}</span></td>
+      <td style="display:flex;gap:6px;align-items:center">
+        <button class="btn btn-outline btn-sm" onclick="editUsuario(${u.id})">✏️ Editar</button>
+        ${u.role !== 'admin' || users.filter(x=>x.role==='admin').length > 1
+          ? `<button class="btn btn-danger btn-sm" onclick="deleteUsuario(${u.id})">✕</button>` : ''}
+      </td>
+    </tr>`).join('');
+  document.getElementById('usuariosTable').innerHTML = `
+    <thead><tr><th>Nombre</th><th>Usuario</th><th>Contraseña</th><th>Rol</th><th>Acciones</th></tr></thead>
+    <tbody>${rows}</tbody>`;
+
+  // show + new user button in header
+  const ph = document.querySelector('#view-usuarios .page-header');
+  if (ph && !ph.querySelector('.btn-gold')) {
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-gold';
+    btn.textContent = '+ Nuevo Usuario';
+    btn.onclick = () => openNuevoUsuario();
+    ph.appendChild(btn);
+  }
+}
+
+function openNuevoUsuario() {
+  document.getElementById('usuarioModalTitle').textContent = 'Nuevo Usuario';
+  document.getElementById('uEditId').value = '';
+  document.getElementById('uNombre').value = '';
+  document.getElementById('uUser').value = '';
+  document.getElementById('uPass').value = '';
+  document.getElementById('uRol').value = 'vendedor';
+  document.getElementById('usuarioModal').classList.add('open');
+}
+
+function editUsuario(id) {
+  const users = getUsuarios();
+  const u = users.find(x => x.id === id);
+  if (!u) return;
+  document.getElementById('usuarioModalTitle').textContent = 'Editar Usuario';
+  document.getElementById('uEditId').value = id;
+  document.getElementById('uNombre').value = u.name;
+  document.getElementById('uUser').value = u.user;
+  document.getElementById('uPass').value = '';
+  document.getElementById('uRol').value = u.role;
+  document.getElementById('usuarioModal').classList.add('open');
+}
+
+function saveUsuario() {
+  const nombre = document.getElementById('uNombre').value.trim();
+  const user = document.getElementById('uUser').value.trim().toLowerCase();
+  const pass = document.getElementById('uPass').value;
+  const role = document.getElementById('uRol').value;
+  const editId = document.getElementById('uEditId').value;
+
+  if (!nombre || !user) { toast('Nombre y usuario son obligatorios', 'error'); return; }
+
+  let users = getUsuarios();
+
+  if (editId) {
+    // editing
+    const idx = users.findIndex(x => x.id === parseInt(editId));
+    if (idx === -1) return;
+    const duplicate = users.find(x => x.user === user && x.id !== parseInt(editId));
+    if (duplicate) { toast('Ese nombre de usuario ya existe', 'error'); return; }
+    users[idx].name = nombre;
+    users[idx].user = user;
+    users[idx].role = role;
+    if (pass.length >= 4) users[idx].pass = pass;
+    else if (pass.length > 0 && pass.length < 4) { toast('La contraseña debe tener al menos 4 caracteres', 'error'); return; }
+    toast('Usuario actualizado ✓', 'success');
+  } else {
+    // new
+    if (!pass || pass.length < 4) { toast('La contraseña debe tener al menos 4 caracteres', 'error'); return; }
+    if (users.find(x => x.user === user)) { toast('Ese nombre de usuario ya existe', 'error'); return; }
+    const newId = Math.max(...users.map(x => x.id), 0) + 1;
+    users.push({ id: newId, name: nombre, user, pass, role });
+    toast('Usuario creado ✓', 'success');
+  }
+
+  saveUsuarios(users);
+  closeModal('usuarioModal');
+  renderUsuarios();
+  // update session if editing self
+  if (editId && currentUser && currentUser.id === parseInt(editId)) {
+    const updated = users.find(x => x.id === parseInt(editId));
+    currentUser = updated;
+    sessionStorage.setItem('albanaUser', JSON.stringify(updated));
+    document.getElementById('userName').textContent = updated.name;
+    document.getElementById('userAvatar').textContent = updated.name[0].toUpperCase();
+  }
+}
+
+function deleteUsuario(id) {
+  if (!confirm('¿Eliminar este usuario?')) return;
+  let users = getUsuarios();
+  users = users.filter(x => x.id !== id);
+  saveUsuarios(users);
+  renderUsuarios();
+  toast('Usuario eliminado', 'success');
+}
+
+// ============================================================
+//  MODALS
+// ============================================================
+function openModal(id) {
+  if (id === 'ventaModal') populateVentaModal();
+  if (id === 'compraModal') populateCompraModal();
+  if (id === 'ajusteModal') populateAjusteModal(null);
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); }));
+
+function populateVentaModal() {
+  document.getElementById('vCliente').innerHTML = '<option value="">Sin cliente (mostrador)</option>' + cache.clientes.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+  document.getElementById('vProducto').innerHTML = cache.productos.filter(p => p.stock > 0).map(p => `<option value="${p.id}">${p.nombre} (${p.stock} u.)</option>`).join('');
+  fillVentaPrice();
+}
+function fillVentaPrice() {
+  const pId = document.getElementById('vProducto').value;
+  const prod = cache.productos.find(p => p.id === pId);
+  if (prod) document.getElementById('vPrecio').value = prod.precio;
+  calcVentaTotal();
+}
+function calcVentaTotal() {
+  const c = parseFloat(document.getElementById('vCantidad').value) || 0;
+  const p = parseFloat(document.getElementById('vPrecio').value) || 0;
+  document.getElementById('vTotal').textContent = fmt(c * p);
+}
+
+function populateCompraModal() {
+  document.getElementById('cProveedor').innerHTML = '<option value="">Sin especificar</option>' + cache.proveedores.map(pv => `<option value="${pv.id}">${pv.nombre}</option>`).join('');
+  document.getElementById('cProducto').innerHTML = '<option value="__nuevo__">+ Producto nuevo</option>' + cache.productos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+  document.getElementById('nuevoProductoFields').style.display = 'block';
+  document.getElementById('cFecha').value = today();
+}
+function onCompraProducto() {
+  const v = document.getElementById('cProducto').value;
+  document.getElementById('nuevoProductoFields').style.display = v === '__nuevo__' ? 'block' : 'none';
+  if (v !== '__nuevo__') {
+    const p = cache.productos.find(x => x.id === v);
+    if (p) { document.getElementById('cCosto').value = p.costo; document.getElementById('cPrecioVenta').value = p.precio; }
+  }
+}
+
+function populateAjusteModal(prodId) {
+  const sel = document.getElementById('ajProducto');
+  sel.innerHTML = cache.productos.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+  if (prodId) sel.value = prodId;
+  onAjusteProd();
+}
+function onAjusteProd() {
+  const p = cache.productos.find(x => x.id === document.getElementById('ajProducto').value);
+  if (p) { document.getElementById('ajStockActual').value = p.stock; document.getElementById('ajNuevoStock').value = p.stock; }
+}
+function openAjusteForProd(id) { populateAjusteModal(id); document.getElementById('ajusteModal').classList.add('open'); }
+
+// ============================================================
+//  SAVE ACTIONS
+// ============================================================
+async function saveVenta() {
+  const pId = document.getElementById('vProducto').value;
+  const cant = parseInt(document.getElementById('vCantidad').value) || 0;
+  const precio = parseFloat(document.getElementById('vPrecio').value) || 0;
+  if (!pId || !cant || !precio) { toast('Completá todos los campos', 'error'); return; }
+  const prod = cache.productos.find(p => p.id === pId);
+  if (!prod || prod.stock < cant) { toast('Stock insuficiente', 'error'); return; }
+  setBtnLoading('btnSaveVenta', true);
+  try {
+    const clId = document.getElementById('vCliente').value || null;
+    await insert('ventas', { fecha: today(), cliente_id: clId, producto_id: pId, cant, precio, pago: document.getElementById('vPago').value, notas: document.getElementById('vNotas').value, vendedor: currentUser.name });
+    await update('productos', pId, { stock: prod.stock - cant });
+    await insert('caja', { fecha: today(), tipo: 'ingreso', descripcion: `Venta: ${prod.nombre}`, monto: cant * precio, categoria: 'Ventas' });
+    closeModal('ventaModal');
+    toast('Venta registrada ✓', 'success');
+    document.getElementById('vNotas').value = '';
+    await renderView(currentView);
+  } catch (e) { toast('Error al guardar: ' + e.message, 'error'); }
+  setBtnLoading('btnSaveVenta', false);
+}
+
+async function saveCompra() {
+  const cant = parseInt(document.getElementById('cCantidad').value) || 0;
+  const costo = parseFloat(document.getElementById('cCosto').value) || 0;
+  if (!cant || !costo) { toast('Completá cantidad y costo', 'error'); return; }
+  setBtnLoading('btnSaveCompra', true);
+  try {
+    let prodId;
+    const sel = document.getElementById('cProducto').value;
+    if (sel === '__nuevo__') {
+      const nombre = document.getElementById('cNombreProd').value.trim();
+      if (!nombre) { toast('Ingresá el nombre del producto', 'error'); setBtnLoading('btnSaveCompra', false); return; }
+      const np = await insert('productos', { nombre, categoria: document.getElementById('cCategoria').value, stock: cant, costo, precio: parseFloat(document.getElementById('cPrecioVenta').value) || costo * 2, stock_min: 3 });
+      prodId = np.id;
+    } else {
+      prodId = sel;
+      const p = cache.productos.find(x => x.id === prodId);
+      const pv = parseFloat(document.getElementById('cPrecioVenta').value);
+      await update('productos', prodId, { stock: (p?.stock || 0) + cant, costo, ...(pv ? { precio: pv } : {}) });
+    }
+    const provId = document.getElementById('cProveedor').value || null;
+    const prod = cache.productos.find(p => p.id === prodId) || { nombre: document.getElementById('cNombreProd').value };
+    await insert('compras', { fecha: document.getElementById('cFecha').value || today(), proveedor_id: provId, producto_id: prodId, cant, costo, notas: document.getElementById('cNotas').value });
+    await insert('caja', { fecha: today(), tipo: 'egreso', descripcion: `Compra: ${prod.nombre}`, monto: cant * costo, categoria: 'Compras / Stock' });
+    closeModal('compraModal');
+    toast('Compra registrada ✓', 'success');
+    await renderView(currentView);
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+  setBtnLoading('btnSaveCompra', false);
+}
+
+async function saveProducto() {
+  const nombre = document.getElementById('pNombre').value.trim();
+  if (!nombre) { toast('Ingresá el nombre', 'error'); return; }
+  setBtnLoading('btnSaveProducto', true);
+  try {
+    await insert('productos', { nombre, categoria: document.getElementById('pCategoria').value, stock: parseInt(document.getElementById('pStock').value) || 0, costo: parseFloat(document.getElementById('pCosto').value) || 0, precio: parseFloat(document.getElementById('pPrecio').value) || 0, stock_min: parseInt(document.getElementById('pStockMin').value) || 3 });
+    closeModal('productoModal');
+    toast('Producto agregado ✓', 'success');
+    document.getElementById('pNombre').value = '';
+    await renderView(currentView);
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+  setBtnLoading('btnSaveProducto', false);
+}
+
+async function saveAjuste() {
+  const pId = document.getElementById('ajProducto').value;
+  const nuevoStock = parseInt(document.getElementById('ajNuevoStock').value);
+  if (isNaN(nuevoStock) || nuevoStock < 0) { toast('Stock inválido', 'error'); return; }
+  setBtnLoading('btnSaveAjuste', true);
+  try {
+    await update('productos', pId, { stock: nuevoStock });
+    closeModal('ajusteModal');
+    toast('Stock ajustado ✓', 'success');
+    await renderView(currentView);
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+  setBtnLoading('btnSaveAjuste', false);
+}
+
+async function saveMov() {
+  const monto = parseFloat(document.getElementById('mMonto').value) || 0;
+  const desc = document.getElementById('mDesc').value.trim();
+  if (!monto || !desc) { toast('Completá descripción y monto', 'error'); return; }
+  setBtnLoading('btnSaveMov', true);
+  try {
+    await insert('caja', { fecha: document.getElementById('mFecha').value || today(), tipo: document.getElementById('mTipo').value, descripcion: desc, monto, categoria: document.getElementById('mCat').value });
+    closeModal('movModal');
+    toast('Movimiento registrado ✓', 'success');
+    document.getElementById('mDesc').value = ''; document.getElementById('mMonto').value = '';
+    await renderView(currentView);
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+  setBtnLoading('btnSaveMov', false);
+}
+
+async function saveCliente() {
+  const nombre = document.getElementById('clNombre').value.trim();
+  if (!nombre) { toast('Ingresá el nombre', 'error'); return; }
+  setBtnLoading('btnSaveCliente', true);
+  try {
+    await insert('clientes', { nombre, telefono: document.getElementById('clTel').value, email: document.getElementById('clEmail').value, instagram: document.getElementById('clInsta').value, notas: document.getElementById('clNotas').value });
+    closeModal('clienteModal');
+    toast('Cliente guardado ✓', 'success');
+    ['clNombre', 'clTel', 'clEmail', 'clInsta', 'clNotas'].forEach(id => document.getElementById(id).value = '');
+    await renderView(currentView);
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+  setBtnLoading('btnSaveCliente', false);
+}
+
+async function saveProveedor() {
+  const nombre = document.getElementById('pvNombre').value.trim();
+  if (!nombre) { toast('Ingresá el nombre', 'error'); return; }
+  setBtnLoading('btnSaveProveedor', true);
+  try {
+    await insert('proveedores', { nombre, telefono: document.getElementById('pvTel').value, email: document.getElementById('pvEmail').value, whatsapp: document.getElementById('pvWa').value, rubro: document.getElementById('pvRubro').value, notas: document.getElementById('pvNotas').value });
+    closeModal('proveedorModal');
+    toast('Proveedor guardado ✓', 'success');
+    ['pvNombre', 'pvTel', 'pvEmail', 'pvWa', 'pvRubro', 'pvNotas'].forEach(id => document.getElementById(id).value = '');
+    await renderView(currentView);
+  } catch (e) { toast('Error: ' + e.message, 'error'); }
+  setBtnLoading('btnSaveProveedor', false);
+}
+
+// ============================================================
+//  DELETE
+// ============================================================
+async function deleteVenta(id) {
+  if (!confirm('¿Eliminar esta venta?')) return;
+  try { await remove('ventas', id); toast('Venta eliminada', 'success'); await renderView(currentView); } catch (e) { toast('Error', 'error'); }
+}
+async function deleteCompra(id) {
+  if (!confirm('¿Eliminar esta compra?')) return;
+  try { await remove('compras', id); toast('Compra eliminada', 'success'); await renderView(currentView); } catch (e) { toast('Error', 'error'); }
+}
+async function deleteMov(id) {
+  if (!confirm('¿Eliminar este movimiento?')) return;
+  try { await remove('caja', id); toast('Eliminado', 'success'); await renderView(currentView); } catch (e) { toast('Error', 'error'); }
+}
+async function deleteCliente(id) {
+  if (!confirm('¿Eliminar este cliente?')) return;
+  try { await remove('clientes', id); toast('Cliente eliminado', 'success'); await renderView(currentView); } catch (e) { toast('Error', 'error'); }
+}
+async function deleteProveedor(id) {
+  if (!confirm('¿Eliminar este proveedor?')) return;
+  try { await remove('proveedores', id); toast('Proveedor eliminado', 'success'); await renderView(currentView); } catch (e) { toast('Error', 'error'); }
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function today() { return new Date().toISOString().split('T')[0]; }
+function fmt(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+function filterTable(input, tableId) {
+  const q = input.value.toLowerCase();
+  document.querySelectorAll('#' + tableId + ' tbody tr').forEach(tr => { tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+}
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+function setBtnLoading(id, loading) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.disabled = loading;
+  btn.style.opacity = loading ? '.6' : '1';
+}
+window.addEventListener('resize', () => { if (currentView === 'dashboard') renderDashboard(); });
+</script>
+</body>
+</html>
