@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manual de Usuario — Albana Boutique CRM</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=Nunito:wght@800;900&family=Cormorant+Garamond:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1a2e;--cream:#f5f0e8;--cream2:#ede6d6;--gold:#c9a84c;--gold2:#e8c97a;--rose:#c0616b;--sage:#5f8a72;--white:#fff;--r:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);line-height:1.7}
+a{color:var(--gold);text-decoration:none}
+
+/* HEADER */
+.cover{background:var(--ink);color:white;padding:60px 40px;text-align:center;position:relative;overflow:hidden}
+.cover::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(201,168,76,.12) 0%,transparent 70%);top:-150px;right:-100px}
+.cover::after{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(91,143,190,.1) 0%,transparent 70%);bottom:-80px;left:-60px}
+.cover-inner{position:relative;z-index:1}
+.cover h1{font-family:'Nunito',sans-serif;font-weight:900;font-size:2.8rem;letter-spacing:-.5px}
+.cover h1 span{color:var(--gold)}
+.cover-sub{font-family:'Cormorant Garamond',serif;letter-spacing:3px;text-transform:uppercase;font-size:.85rem;color:var(--gold2);margin-top:4px;display:block}
+.cover p{margin-top:18px;color:rgba(255,255,255,.6);font-size:.95rem;max-width:500px;margin-left:auto;margin-right:auto}
+.cover-badge{display:inline-block;margin-top:16px;padding:5px 16px;background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);color:var(--gold2);border-radius:20px;font-size:.78rem;letter-spacing:1px}
+
+/* LAYOUT */
+.container{max-width:860px;margin:0 auto;padding:40px 24px 60px}
+
+/* TOC */
+.toc{background:var(--white);border-radius:var(--r);padding:28px 32px;box-shadow:0 4px 24px rgba(26,26,46,.08);margin-bottom:40px;border-left:4px solid var(--gold)}
+.toc h2{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:16px;color:var(--ink)}
+.toc ol{padding-left:20px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}
+.toc li{font-size:.88rem;padding:2px 0}
+.toc a{color:var(--ink);font-weight:500}
+.toc a:hover{color:var(--gold)}
+
+/* SECTIONS */
+.section{margin-bottom:44px}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid var(--cream2)}
+.section-icon{width:44px;height:44px;border-radius:12px;background:var(--ink);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.section-header h2{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--ink)}
+.section-header p{font-size:.82rem;color:#999;margin-top:2px}
+
+/* CARDS */
+.card{background:var(--white);border-radius:var(--r);padding:22px 26px;box-shadow:0 4px 24px rgba(26,26,46,.07);margin-bottom:16px}
+.card h3{font-family:'DM Serif Display',serif;font-size:1.1rem;margin-bottom:10px;color:var(--ink)}
+.card p{font-size:.9rem;color:#555;margin-bottom:8px}
+.card p:last-child{margin-bottom:0}
+
+/* STEPS */
+.steps{counter-reset:step;display:flex;flex-direction:column;gap:14px}
+.step{display:flex;gap:16px;align-items:flex-start;background:var(--white);border-radius:var(--r);padding:18px 22px;box-shadow:0 2px 12px rgba(26,26,46,.06)}
+.step-num{counter-increment:step;width:32px;height:32px;border-radius:50%;background:var(--ink);color:white;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0;margin-top:1px}
+.step-body h4{font-weight:600;font-size:.95rem;margin-bottom:4px;color:var(--ink)}
+.step-body p{font-size:.86rem;color:#666;line-height:1.6}
+
+/* ROLES TABLE */
+.roles-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.role-card{border-radius:var(--r);padding:20px;border:2px solid var(--cream2)}
+.role-card.admin{border-color:var(--gold);background:#fffdf5}
+.role-card.vendedor{border-color:var(--cream2);background:var(--white)}
+.role-card h4{font-weight:700;font-size:.95rem;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.role-card ul{padding-left:18px;font-size:.85rem;color:#555;display:flex;flex-direction:column;gap:4px}
+
+/* TIPS */
+.tip{display:flex;gap:12px;align-items:flex-start;background:#f0faf4;border:1px solid #c8e6c9;border-radius:10px;padding:14px 18px;margin-top:14px;font-size:.86rem;color:#2e7d32}
+.tip.warning{background:#fff8e1;border-color:#ffe082;color:#e65100}
+.tip.info{background:#e3f2fd;border-color:#90caf9;color:#1565c0}
+.tip-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+
+/* SHORTCUT TABLE */
+.sh-table{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:8px}
+.sh-table th{text-align:left;padding:9px 14px;background:var(--cream2);font-size:.72rem;letter-spacing:.5px;text-transform:uppercase;color:#777}
+.sh-table td{padding:10px 14px;border-bottom:1px solid var(--cream2)}
+.sh-table tr:last-child td{border-bottom:none}
+.sh-table tr:hover td{background:#fafafa}
+kbd{background:var(--ink);color:white;padding:2px 8px;border-radius:5px;font-size:.75rem;font-family:monospace}
+.tag{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:600}
+.tag-admin{background:#e3f2fd;color:#1565c0}
+.tag-all{background:#e8f5e9;color:#2e7d32}
+
+/* FLOW */
+.flow{display:flex;gap:0;margin:12px 0;flex-wrap:wrap}
+.flow-step{background:var(--ink);color:white;padding:8px 16px;font-size:.8rem;font-weight:600;position:relative}
+.flow-step:not(:last-child)::after{content:'›';position:absolute;right:-10px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:1.1rem;z-index:1}
+.flow-step:first-child{border-radius:8px 0 0 8px}
+.flow-step:last-child{border-radius:0 8px 8px 0;background:var(--sage)}
+
+/* FOOTER */
+.manual-footer{text-align:center;padding:32px;background:var(--ink);color:rgba(255,255,255,.4);font-size:.8rem;border-radius:var(--r)}
+.manual-footer strong{color:var(--gold2)}
+
+@media(max-width:640px){
+  .cover{padding:40px 20px}
+  .cover h1{font-size:2rem}
+  .toc ol{grid-template-columns:1fr}
+  .roles-grid{grid-template-columns:1fr}
+  .flow-step{font-size:.72rem;padding:7px 12px}
+  .container{padding:24px 16px 48px}
+}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="cover-inner">
+    <h1>Albana <span>Boutique</span></h1>
+    <span class="cover-sub">Gestión de Tienda</span>
+    <p>Manual de usuario del sistema CRM — todo lo que necesitás saber para usar la app día a día.</p>
+    <div class="cover-badge">Versión 1.0</div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <h2>Contenido</h2>
+    <ol>
+      <li><a href="#acceso">Acceso y usuarios</a></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#ventas">Registrar una venta</a></li>
+      <li><a href="#compras">Cargar mercadería</a></li>
+      <li><a href="#stock">Gestión de stock</a></li>
+      <li><a href="#caja">Flujo de caja</a></li>
+      <li><a href="#clientes">Clientes</a></li>
+      <li><a href="#proveedores">Proveedores</a></li>
+      <li><a href="#usuarios">Administración de usuarios</a></li>
+      <li><a href="#tips">Consejos y flujo diario</a></li>
+    </ol>
+  </div>
+
+  <!-- 1. ACCESO -->
+  <div class="section" id="acceso">
+    <div class="section-header">
+      <div class="section-icon">🔐</div>
+      <div><h2>Acceso y usuarios</h2><p>Cómo entrar al sistema y qué puede hacer cada uno</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Cómo iniciar sesión</h3>
+      <p>Entrá a la URL del sitio desde cualquier navegador — Chrome, Safari, Firefox — en la computadora o en el celular. Ingresá tu <strong>usuario</strong> y <strong>contraseña</strong> y hacé click en <em>Ingresar</em>.</p>
+      <p>La sesión se mantiene abierta hasta que cerrés sesión manualmente. Si cerrás el navegador y volvés a abrir el sitio, vas a tener que volver a ingresar.</p>
+    </div>
+
+    <div class="roles-grid">
+      <div class="role-card admin">
+        <h4>🌟 Administrador</h4>
+        <ul>
+          <li>Acceso a todas las secciones</li>
+          <li>Ver Dashboard completo</li>
+          <li>Registrar ventas y compras</li>
+          <li>Gestionar stock</li>
+          <li>Ver flujo de caja completo</li>
+          <li>Agregar/editar clientes</li>
+          <li>Agregar/editar proveedores</li>
+          <li><strong>Crear y editar usuarios</strong></li>
+          <li><strong>Cambiar contraseñas</strong></li>
+        </ul>
+      </div>
+      <div class="role-card vendedor">
+        <h4>👤 Vendedor</h4>
+        <ul>
+          <li>Registrar ventas</li>
+          <li>Cargar compras de stock</li>
+          <li>Ver y ajustar stock</li>
+          <li>Ver flujo de caja</li>
+          <li>Agregar clientes</li>
+          <li>Agregar proveedores</li>
+          <li>Ver Dashboard</li>
+          <li style="color:#bbb">✗ No puede gestionar usuarios</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tip info">
+      <span class="tip-icon">📱</span>
+      <div>En el celular podés agregar el sitio a la pantalla de inicio: en <strong>iPhone</strong> abrís Safari → botón compartir → "Agregar a pantalla de inicio". En <strong>Android</strong> abrís Chrome → menú (3 puntos) → "Agregar a pantalla de inicio". Queda como una app.</div>
+    </div>
+  </div>
+
+  <!-- 2. DASHBOARD -->
+  <div class="section" id="dashboard">
+    <div class="section-header">
+      <div class="section-icon">📊</div>
+      <div><h2>Dashboard</h2><p>El resumen general del negocio</p></div>
+    </div>
+    <div class="card">
+      <h3>¿Qué muestra?</h3>
+      <p>El Dashboard es la primera pantalla que ves al entrar. Muestra un resumen del estado actual del negocio con cuatro indicadores:</p>
+      <p>• <strong>Ventas del mes</strong> — total facturado en el mes en curso y cantidad de transacciones<br>
+         • <strong>Compras del mes</strong> — total invertido en mercadería este mes<br>
+         • <strong>Saldo en Caja</strong> — balance acumulado (ingresos menos egresos). Verde = positivo, rojo = negativo<br>
+         • <strong>Stock crítico</strong> — cantidad de productos que están por debajo del mínimo configurado</p>
+    </div>
+    <div class="card">
+      <h3>Tablas del Dashboard</h3>
+      <p>• <strong>Últimas Ventas</strong> — las 5 ventas más recientes con fecha, producto, total y método de pago<br>
+         • <strong>Stock Crítico</strong> — los productos que necesitan reposición urgente. Si un producto aparece acá, es momento de hacer una compra.</p>
+    </div>
+  </div>
+
+  <!-- 3. VENTAS -->
+  <div class="section" id="ventas">
+    <div class="section-header">
+      <div class="section-icon">💰</div>
+      <div><h2>Registrar una venta</h2><p>Cada venta descuenta stock y registra el ingreso en caja automáticamente</p></div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Ir a Ventas → "+ Nueva Venta"</h4><p>Hacé click en el botón dorado en la esquina superior derecha.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Seleccionar cliente (opcional)</h4><p>Si es un cliente registrado, buscalo en el desplegable. Si es una venta de mostrador sin cliente identificado, dejá la opción "Sin cliente".</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Seleccionar producto</h4><p>El desplegable muestra solo los productos con stock disponible. Al elegir uno, el precio de venta se completa automáticamente — podés modificarlo si hacés un descuento.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Ingresar cantidad y método de pago</h4><p>El total se calcula solo. Elegí el método: Efectivo, Transferencia, Tarjeta Débito, Tarjeta Crédito o Mercado Pago.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Confirmar con "Registrar Venta"</h4><p>El sistema descuenta la cantidad del stock automáticamente y registra el ingreso en el Flujo de Caja. No hace falta hacer nada más.</p></div></div>
+    </div>
+
+    <div class="tip warning">
+      <span class="tip-icon">⚠️</span>
+      <div>Si un producto no aparece en el listado al hacer una venta, significa que su stock es <strong>0</strong>. Primero hay que cargar una compra para reponer el stock.</div>
+    </div>
+  </div>
+
+  <!-- 4. COMPRAS -->
+  <div class="section" id="compras">
+    <div class="section-header">
+      <div class="section-icon">🛒</div>
+      <div><h2>Cargar mercadería nueva</h2><p>Registrá cada pedido a proveedores para mantener el stock actualizado</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Producto ya existente vs. producto nuevo</h3>
+      <p>Cuando hacés una compra, el sistema te pregunta qué producto estás ingresando:</p>
+      <p>• <strong>Producto existente</strong> — elegís de la lista y el stock se suma automáticamente al que ya había. También podés actualizar el precio de venta si cambió.<br>
+         • <strong>Producto nuevo</strong> — elegí la opción "+ Producto nuevo", completá el nombre y categoría. Se crea el producto y se carga el stock inicial en un solo paso.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Compras → "+ Nueva Compra"</h4><p>Accedé desde el menú lateral.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Elegir proveedor (opcional)</h4><p>Si el proveedor está registrado, seleccionalo para llevar el historial de compras por proveedor.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Seleccionar producto y completar datos</h4><p>Ingresá la cantidad, el costo unitario que pagaste y el precio de venta al público. La fecha se completa con hoy pero podés cambiarla.</p></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-body"><h4>Confirmar</h4><p>El stock sube automáticamente y se registra el egreso en Flujo de Caja.</p></div></div>
+    </div>
+  </div>
+
+  <!-- 5. STOCK -->
+  <div class="section" id="stock">
+    <div class="section-header">
+      <div class="section-icon">📦</div>
+      <div><h2>Gestión de Stock</h2><p>Inventario visual con alertas automáticas</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Vista de inventario</h3>
+      <p>El stock se muestra en tarjetas con una barra de nivel. Los colores indican el estado:</p>
+      <p>• 🟢 <strong>Verde</strong> — stock OK<br>
+         • 🟡 <strong>Amarillo</strong> — stock bajo (por debajo del mínimo configurado)<br>
+         • 🔴 <strong>Rojo</strong> — sin stock</p>
+      <p>Podés filtrar por categoría usando los botones: Remeras, Pantalones, Vestidos, Camperas, Accesorios.</p>
+    </div>
+
+    <div class="card">
+      <h3>Ajuste manual de stock</h3>
+      <p>Si al hacer un conteo físico el stock en el sistema no coincide con la realidad, usá el botón <strong>"Ajustar Stock"</strong> o hacé click directamente sobre cualquier producto.</p>
+      <p>Ingresá el stock real y el motivo (conteo físico, merma, devolución). El sistema corrige la cantidad sin generar movimiento de caja.</p>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>El <strong>stock mínimo</strong> de cada producto lo configurás al crearlo (por defecto es 3 unidades). Cuando el stock cae por debajo de ese número, el producto aparece en amarillo y también en el Dashboard como alerta.</div>
+    </div>
+  </div>
+
+  <!-- 6. CAJA -->
+  <div class="section" id="caja">
+    <div class="section-header">
+      <div class="section-icon">💳</div>
+      <div><h2>Flujo de Caja</h2><p>Control de ingresos y egresos del negocio</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Movimientos automáticos</h3>
+      <p>Cada vez que registrás una <strong>venta</strong>, se genera automáticamente un ingreso en caja. Cada vez que registrás una <strong>compra de stock</strong>, se genera un egreso. No necesitás hacerlo manualmente.</p>
+    </div>
+
+    <div class="card">
+      <h3>Movimientos manuales</h3>
+      <p>Usá el botón <strong>"+ Movimiento"</strong> para registrar ingresos o egresos que no son ventas ni compras de stock. Por ejemplo:</p>
+      <p>• Egresos: alquiler del local, servicios (luz, internet), sueldos, publicidad<br>
+         • Ingresos: otros ingresos, devoluciones cobradas, etc.</p>
+    </div>
+
+    <div class="card">
+      <h3>Gráfico de 7 días</h3>
+      <p>Las barras verdes representan ingresos y las rojas egresos de cada día. Pasando el mouse por encima muestra el monto exacto. Abajo del gráfico aparece el balance total acumulado.</p>
+    </div>
+  </div>
+
+  <!-- 7. CLIENTES -->
+  <div class="section" id="clientes">
+    <div class="section-header">
+      <div class="section-icon">👥</div>
+      <div><h2>Clientes</h2><p>Tu base de datos de clientes</p></div>
+    </div>
+
+    <div class="card">
+      <h3>¿Para qué sirve?</h3>
+      <p>Registrar clientes te permite asociarlos a las ventas y ver cuánto gastó cada uno históricamente. También es útil para guardar datos de contacto para comunicarte con ellas ante novedades, promociones o cuando llegó algo que les puede interesar.</p>
+      <p>Campos disponibles: nombre, teléfono, email, Instagram y notas libres (talles, preferencias, etc.).</p>
+    </div>
+
+    <div class="card">
+      <h3>Buscar un cliente</h3>
+      <p>Usá la barra de búsqueda para filtrar por nombre, teléfono o cualquier dato. La búsqueda es instantánea.</p>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div>No es obligatorio registrar el cliente en cada venta. Para ventas rápidas de mostrador podés dejarlo en "Sin cliente" y registrar el cliente solo cuando la persona es habitual.</div>
+    </div>
+  </div>
+
+  <!-- 8. PROVEEDORES -->
+  <div class="section" id="proveedores">
+    <div class="section-header">
+      <div class="section-icon">🏭</div>
+      <div><h2>Proveedores</h2><p>Directorio de contactos de proveedores</p></div>
+    </div>
+
+    <div class="card">
+      <h3>¿Qué información guardar?</h3>
+      <p>Para cada proveedor podés guardar: nombre o empresa, teléfono, email, WhatsApp o Instagram, el rubro o tipo de productos que proveen, y notas libres (días de entrega, condiciones de pago, mínimo de pedido, etc.).</p>
+      <p>La columna <strong>"Compras"</strong> muestra cuántas órdenes de compra están asociadas a ese proveedor, lo que te da una idea de con quién trabajás más.</p>
+    </div>
+  </div>
+
+  <!-- 9. USUARIOS -->
+  <div class="section" id="usuarios">
+    <div class="section-header">
+      <div class="section-icon">🔐</div>
+      <div><h2>Administración de Usuarios</h2><p>Solo visible para el Administrador</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Crear un nuevo usuario</h3>
+      <div class="steps">
+        <div class="step"><div class="step-num"></div><div class="step-body"><h4>Admin → Usuarios → "+ Nuevo Usuario"</h4><p>Solo el administrador ve esta sección en el menú.</p></div></div>
+        <div class="step"><div class="step-num"></div><div class="step-body"><h4>Completar los datos</h4><p>Nombre completo, nombre de usuario (lo que van a escribir para entrar), contraseña y rol (Vendedor o Administrador).</p></div></div>
+        <div class="step"><div class="step-num"></div><div class="step-body"><h4>Guardar y comunicar</h4><p>El usuario queda activo de inmediato. Comunicate con la persona para darle el usuario y contraseña.</p></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Cambiar contraseña de un usuario</h3>
+      <p>Hacé click en <strong>✏️ Editar</strong> en la fila del usuario. Escribí la nueva contraseña en el campo correspondiente. Si dejás el campo vacío, la contraseña no cambia. Guardá los cambios.</p>
+    </div>
+
+    <div class="tip warning">
+      <span class="tip-icon">⚠️</span>
+      <div>Los usuarios y contraseñas se guardan en el navegador del dispositivo donde estás usando la app como administrador. Si cambiás de dispositivo para administrar, los usuarios seguirán siendo los mismos porque están sincronizados por sesión. <strong>Recordá comunicar los accesos a cada vendedor personalmente.</strong></div>
+    </div>
+  </div>
+
+  <!-- 10. TIPS -->
+  <div class="section" id="tips">
+    <div class="section-header">
+      <div class="section-icon">✨</div>
+      <div><h2>Flujo de trabajo diario</h2><p>Cómo sacarle el máximo provecho a la app</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Rutina recomendada</h3>
+      <div class="flow">
+        <div class="flow-step">Abrir el Dashboard</div>
+        <div class="flow-step">Ver stock crítico</div>
+        <div class="flow-step">Registrar ventas del día</div>
+        <div class="flow-step">Cargar compras si llegó mercadería</div>
+        <div class="flow-step">Revisar caja al cierre</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Tabla de acciones rápidas</h3>
+      <table class="sh-table">
+        <thead><tr><th>Acción</th><th>Dónde</th><th>Rol</th></tr></thead>
+        <tbody>
+          <tr><td>Registrar una venta</td><td>Ventas → + Nueva Venta</td><td><span class="tag tag-all">Todos</span></td></tr>
+          <tr><td>Cargar mercadería nueva</td><td>Compras → + Nueva Compra</td><td><span class="tag tag-all">Todos</span></td></tr>
+          <tr><td>Ver qué productos faltan</td><td>Dashboard → Stock Crítico</td><td><span class="tag tag-all">Todos</span></td></tr>
+          <tr><td>Corregir stock erróneo</td><td>Stock → Ajustar Stock</td><td><span class="tag tag-all">Todos</span></td></tr>
+          <tr><td>Agregar gasto (alquiler, etc.)</td><td>Caja → + Movimiento</td><td><span class="tag tag-all">Todos</span></td></tr>
+          <tr><td>Buscar datos de un cliente</td><td>Clientes → barra de búsqueda</td><td><span class="tag tag-all">Todos</span></td></tr>
+          <tr><td>Cambiar contraseña de vendedor</td><td>Admin → Usuarios → Editar</td><td><span class="tag tag-admin">Admin</span></td></tr>
+          <tr><td>Ver balance general</td><td>Caja → totales del gráfico</td><td><span class="tag tag-all">Todos</span></td></tr>
+          <tr><td>Cambiar entre modo claro/oscuro</td><td>Sidebar → botón 🌙</td><td><span class="tag tag-all">Todos</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tip">
+      <span class="tip-icon">💡</span>
+      <div><strong>Al llegar mercadería:</strong> siempre cargá primero la compra. Así el stock se actualiza y los vendedores pueden empezar a registrar ventas de esos productos de inmediato.</div>
+    </div>
+
+    <div class="tip warning">
+      <span class="tip-icon">⚠️</span>
+      <div><strong>Los datos son compartidos en tiempo real.</strong> Si un vendedor registra una venta desde su celular, el stock se actualiza al instante para todos los dispositivos. No hace falta "sincronizar" nada manualmente.</div>
+    </div>
+
+    <div class="tip info">
+      <span class="tip-icon">🌙</span>
+      <div><strong>Modo oscuro / claro:</strong> cada usuario puede elegir el modo que prefiera. La preferencia se guarda en el dispositivo, así que no afecta a los otros usuarios.</div>
+    </div>
+  </div>
+
+  <div class="manual-footer">
+    <p>Manual de usuario — <strong>Albana Boutique CRM</strong> v1.0</p>
+    <p style="margin-top:6px">Ante cualquier problema técnico, contactá al administrador del sistema.</p>
+  </div>
+
+</div>
+</body>
+</html>
