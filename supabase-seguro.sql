@@ -1,7 +1,3 @@
--- ============================================================
---  ALBANA BOUTIQUE — Setup completo (versión corregida)
---  Ejecutá esto en: Supabase > SQL Editor > New query
--- ============================================================
 
 -- ── TABLAS ───────────────────────────────────────────────────
 create table if not exists user_profiles (
@@ -174,28 +170,3 @@ insert into productos (nombre, categoria, stock, costo, precio, stock_min) value
   ('Remera Oversize L',      'Remeras',     1, 3000,  7000, 3)
 on conflict do nothing;
 
--- ============================================================
---  ✅ SQL ejecutado correctamente.
---
---  SIGUIENTE PASO — Crear los 3 usuarios desde el Dashboard:
---
---  Supabase → Authentication → Users → "Add user" (botón)
---
---  1. Email: admin@albanaboutique.com
---     Password: Admin2024!
---     ✓ tildar "Auto Confirm User"
---     → Después ir a Table Editor → user_profiles
---       y cambiar su "role" a "admin"
---
---  2. Email: vendedor1@albanaboutique.com
---     Password: Vende2024!
---     ✓ tildar "Auto Confirm User"
---     (role queda en "vendedor" automáticamente)
---
---  3. Email: vendedor2@albanaboutique.com
---     Password: Vende2024!
---     ✓ tildar "Auto Confirm User"
---
---  Después cambiá las contraseñas desde el mismo panel
---  antes de darlas a las vendedoras.
--- ============================================================
