@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Albana Boutique — ERP</title>
+<title>Albana Boutique — CRM</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=Nunito:wght@400;700;800;900&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -208,7 +208,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 <div id="loadingScreen">
   <div class="brand-logo" style="text-align:center">
     <div class="brand-albana" style="font-size:2.6rem;color:#fff">Albana Boutique</div>
-    <span class="brand-boutique" style="font-size:.76rem;color:#e8c97a;margin-top:3px">software de gestión</span>
+    <span class="brand-boutique" style="font-size:.76rem;color:#e8c97a;margin-top:3px">Gestión de Tienda</span>
   </div>
   <div class="spinner"></div>
 </div>
@@ -218,7 +218,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
   <div class="login-card">
     <div class="login-logo">
       <div class="brand-albana" style="font-size:2.8rem;color:var(--ink)">Albana Boutique</div>
-      <span class="brand-boutique" style="font-size:.76rem;color:#bbb;margin-top:4px">· Gestión de Tienda</span>
+      <span class="brand-boutique" style="font-size:.76rem;color:#bbb;margin-top:4px">CRM · Gestión de Tienda</span>
     </div>
     <div class="login-error" id="loginError">Usuario o contraseña incorrectos.</div>
     <div class="fg"><label>Email</label><input type="email" id="loginUser" placeholder="tu@email.com" autocomplete="email"></div>
@@ -516,10 +516,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);m
 
 <script>
 // ============================================================
-//  SUPABASE CONFIG — 
+//  SUPABASE CONFIG — reemplazá estos valores con los tuyos
 // ============================================================
-const SUPABASE_URL = 'https://uoumkmzbstdoqnbbssjq.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_LYghwYN6eokKQLjB182tJQ_-_NI1VKf';
+const SUPABASE_URL = 'REEMPLAZAR_CON_TU_URL';
+const SUPABASE_ANON_KEY = 'REEMPLAZAR_CON_TU_ANON_KEY';
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -697,14 +697,15 @@ async function doLogin() {
   btn.disabled = false;
 }
 
-async function doLogout() {
-  await db.auth.signOut();
+function doLogout() {
+  // signOut es async pero no necesitamos esperar — limpiamos UI de inmediato
+  db.auth.signOut().catch(() => {});
   currentUser = null;
   cache = { productos: [], clientes: [], proveedores: [] };
   document.getElementById('app').style.display = 'none';
-  showLogin();
   document.getElementById('loginUser').value = '';
   document.getElementById('loginPass').value = '';
+  showLogin();
 }
 
 document.getElementById('loginPass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -975,7 +976,29 @@ async function renderUsuarios() {
 
   // Cargar perfiles desde Supabase
   const { data: profiles, error } = await db.from('user_profiles').select('*').order('created_at');
-  if (error) { toast('Error al cargar usuarios', 'error'); return; }
+  if (error) {
+    document.getElementById('usuariosTable').innerHTML = `
+      <thead><tr><th>Nombre</th><th>Email</th><th>Contraseña</th><th>Rol</th><th>Acciones</th></tr></thead>
+      <tbody><tr><td colspan="5"><div class="empty-state"><div class="empty-icon">⚠️</div>
+      <p>Error al cargar. Ejecutá el SQL de perfiles en Supabase.</p></div></td></tr></tbody>`;
+    return;
+  }
+  // Si no hay perfiles, puede que el trigger no se ejecutó — mostrar instrucción
+  if (!profiles || profiles.length === 0) {
+    document.getElementById('usuariosTable').innerHTML = `
+      <thead><tr><th>Nombre</th><th>Email</th><th>Contraseña</th><th>Rol</th><th>Acciones</th></tr></thead>
+      <tbody><tr><td colspan="5"><div class="empty-state"><div class="empty-icon">🔐</div>
+      <p>No hay perfiles aún. Ejecutá el SQL de perfiles en Supabase.</p></div></td></tr></tbody>`;
+    const ph = document.querySelector('#view-usuarios .page-header');
+    if (ph && !ph.querySelector('.btn-gold')) {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-gold';
+      btn.textContent = '+ Nuevo Usuario';
+      btn.onclick = () => openNuevoUsuario();
+      ph.appendChild(btn);
+    }
+    return;
+  }
 
   const rows = profiles.map(u => `
     <tr>
